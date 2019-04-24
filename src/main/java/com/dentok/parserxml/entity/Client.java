@@ -3,46 +3,54 @@ package com.dentok.parserxml.entity;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "client")
-public class Client implements Serializable {
+public class Client {
 
     @Id
-    @GeneratedValue(generator = "UUID")
+    @GeneratedValue(
+            generator = "UUID"
+    )
     @GenericGenerator(
             name = "UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(
+            name = "id",
+            updatable = false,
+            nullable = false
+    )
     private UUID id;
-    private Integer clientNumber;
-    private String name;
-    private String surName;
-    private Integer age;
-    private String company;
 
-    /**
-     * Instantiate newly created {@code Client} class
-     */
+    @OneToMany(
+            mappedBy = "client",
+            cascade = {CascadeType.ALL},
+            orphanRemoval = true
+    )
+    private Set<Transaction> transactions = new HashSet<>();
+
+    private String firstName;
+
+    private String lastName;
+
+    private String inn;
+
+    private String middleName;
+
     public Client() {
     }
 
-    /**
-     * @param clientNumber is a clientNumber of client
-     * @param name         is a name of client
-     * @param surName      is a sur Name of client
-     * @param age          is a age of client
-     * @param company      is a name company of client
-     */
-    public Client(Integer clientNumber, String name, String surName, Integer age, String company) {
-        this.clientNumber = clientNumber;
-        this.name = name;
-        this.surName = surName;
-        this.age = age;
-        this.company = company;
+    public Client(Set<Transaction> transactions, String firstName, String lastName, String inn, String middleName) {
+        this.transactions = transactions;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.inn = inn;
+        this.middleName = middleName;
     }
 
     public UUID getId() {
@@ -53,56 +61,58 @@ public class Client implements Serializable {
         this.id = id;
     }
 
-    public Integer getClientNumber() {
-        return clientNumber;
+    public Set<Transaction> getTransactions() {
+        return this.transactions;
     }
 
-    public void setClientNumber(Integer clientNumber) {
-        this.clientNumber = clientNumber;
+    /**
+     * @param transactions Set transaction entities
+     */
+    public void setTransactions(Set<Transaction> transactions) {
+        this.transactions = transactions;
+        this.transactions.stream().filter(transaction -> transaction.getClient() != this).forEach(transaction -> transaction.setClient(this));
     }
 
-    public String getName() {
-        return name;
+    /**
+     * @param transaction add Bot entity
+     */
+    public void addTransactions(Transaction transaction) {
+        this.transactions.add(transaction);
+        if (transaction.getClient() != this) {
+            transaction.setClient(this);
+        }
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String getSurName() {
-        return surName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public void setSurName(String surName) {
-        this.surName = surName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public Integer getAge() {
-        return age;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
-    public void setAge(Integer age) {
-        this.age = age;
+    public String getInn() {
+        return inn;
     }
 
-    public String getCompany() {
-        return company;
+    public void setInn(String inn) {
+        this.inn = inn;
     }
 
-    public void setCompany(String company) {
-        this.company = company;
+    public String getMiddleName() {
+        return middleName;
     }
 
-    @Override
-    public String toString() {
-        return "Client{" +
-                "id=" + id +
-                ", clientNumber=" + clientNumber +
-                ", name='" + name + '\'' +
-                ", surName='" + surName + '\'' +
-                ", age=" + age +
-                ", company='" + company + '\'' +
-                '}';
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
     }
 
     @Override
@@ -112,23 +122,35 @@ public class Client implements Serializable {
 
         Client client = (Client) o;
 
-        if (id != null ? !id.equals(client.id): client.id != null) return false;
-        if (clientNumber != null ? !clientNumber.equals(client.clientNumber) : client.clientNumber != null)
+        if (id != null ? !id.equals(client.id) : client.id != null) return false;
+        if (transactions != null ? !transactions.equals(client.transactions) : client.transactions != null)
             return false;
-        if (name != null ? !name.equals(client.name) : client.name != null) return false;
-        if (surName != null ? !surName.equals(client.surName) : client.surName != null) return false;
-        if (age != null ? !age.equals(client.age) : client.age != null) return false;
-        return company != null ? company.equals(client.company) : client.company == null;
+        if (firstName != null ? !firstName.equals(client.firstName) : client.firstName != null) return false;
+        if (lastName != null ? !lastName.equals(client.lastName) : client.lastName != null) return false;
+        if (inn != null ? !inn.equals(client.inn) : client.inn != null) return false;
+        return middleName != null ? middleName.equals(client.middleName) : client.middleName == null;
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + (clientNumber != null ? clientNumber.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (surName != null ? surName.hashCode() : 0);
-        result = 31 * result + (age != null ? age.hashCode() : 0);
-        result = 31 * result + (company != null ? company.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (transactions != null ? transactions.hashCode() : 0);
+        result = 31 * result + (firstName != null ? firstName.hashCode() : 0);
+        result = 31 * result + (lastName != null ? lastName.hashCode() : 0);
+        result = 31 * result + (inn != null ? inn.hashCode() : 0);
+        result = 31 * result + (middleName != null ? middleName.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Client{" +
+                "id=" + id +
+                ", transactions=" + Arrays.toString(((Set) this.transactions.stream().map(Transaction::getId).collect(Collectors.toSet())).toArray(new String[0])) +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", inn='" + inn + '\'' +
+                ", middleName='" + middleName + '\'' +
+                '}';
     }
 }
